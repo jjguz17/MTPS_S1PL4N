@@ -1,0 +1,2 @@
+query.sql -> Abrirlo, copiar el contenido y pegarlo en Navicat
+pat.sql   -> ejecutarlo desde Navicat
