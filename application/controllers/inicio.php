@@ -1,11 +1,13 @@
 <?php
 class Inicio extends CI_Controller
 {
-    
+     
     
     
     function Inicio()
     {
+    	
+    	
         parent::__construct();
         date_default_timezone_set('America/El_Salvador');
         error_reporting(0);
@@ -15,7 +17,7 @@ class Inicio extends CI_Controller
         $this->load->library("PHPExcel");
         $this->load->model('seguridad_model');
         $this->load->model('reportes_model');
-        
+         $this->load->model('pat_model');
         if(!$this->session->userdata('id_usuario')){
             redirect('index.php/sessiones');
         }
@@ -33,7 +35,9 @@ class Inicio extends CI_Controller
     {   
         $data=$this->seguridad_model->consultar_permiso($this->session->userdata('id_usuario'),Dinicio); 
         if($data['id_permiso']!=NULL) {
-			$anio=date('Y');
+        	$anio= date('Y');
+        	if(isset($_REQUEST["anio"])) $anio = $_REQUEST["anio"];
+			$data['periodo_pat'] = $this->pat_model->mostrar_periodo($anio);
 			$data['objetivos']=$this->reportes_model->objetivos($anio);
 			for($i=0; $i < count($data['objetivos']); $i++) {
 				$r=$this->reportes_model->logros($anio, $data['objetivos'][$i]["id_item"]);
@@ -58,6 +62,8 @@ class Inicio extends CI_Controller
 				}
 				//echo "<br><br><br><br><br>".$data['objetivos'][$i]["id_item"];
 			}
+
+
             pantalla('home',$data,Dinicio);
         }
         else {

@@ -286,5 +286,7 @@ class Pei_model extends CI_Model {
         $sentencia="DELETE FROM pat_item_seccion WHERE id_item=$id_item";
         $this->db->query($sentencia);
 	}
+       
+    
 }
 ?>

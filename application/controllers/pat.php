@@ -176,7 +176,7 @@ class Pat extends CI_Controller
 
             if($anio=='NULL') {
                 //$anio="DATE_FORMAT(CURDATE(),'%Y')";
-                $anio=2018;
+                $anio=2017;
                 // agregue $anio++; Robertohqz 0112116 1057
             }
 			
@@ -230,7 +230,7 @@ class Pat extends CI_Controller
 			$recursos_actividad=$this->input->post('recursos_actividad');
 			$observaciones_actividad=$this->input->post('observaciones_actividad');
             #$anio_meta=($this->input->post('anio_meta')=="")?"DATE_FORMAT(CURDATE(),'%Y')":$this->input->post('anio_meta');
-			$anio_meta=($this->input->post('anio_meta')=="")?"DATE_FORMAT(CURDATE(),'2018')":$this->input->post('anio_meta');
+			$anio_meta=($this->input->post('anio_meta')=="")?"DATE_FORMAT(CURDATE(),'2017')":$this->input->post('anio_meta');
             $meta_enero=($this->input->post('meta_enero')=="")?0:$this->input->post('meta_enero');
 			$meta_febrero=($this->input->post('meta_febrero')=="")?0:$this->input->post('meta_febrero');
 			$meta_marzo=($this->input->post('meta_marzo')=="")?0:$this->input->post('meta_marzo');
@@ -371,7 +371,7 @@ class Pat extends CI_Controller
 
             if($anio=='NULL') {
                 //$anio="DATE_FORMAT(CURDATE(),'%Y')";
-                $anio=2018;
+                $anio=2017;
                 #Robertohqz 011216 1109
             }
 			
@@ -652,7 +652,7 @@ class Pat extends CI_Controller
 
             if($anio=='NULL') {
                 #$anio="DATE_FORMAT(CURDATE(),'%Y')";
-                $anio=2018;
+                $anio=2017;
                 #Robertohqz 011216 1110
             }
             
@@ -682,7 +682,7 @@ class Pat extends CI_Controller
 
             if($anio=='NULL') {
                 #$anio="DATE_FORMAT(CURDATE(),'%Y')";
-                $anio=2018;
+                $anio=2017;
                 #Robertohqz 011216 1110
             }
             

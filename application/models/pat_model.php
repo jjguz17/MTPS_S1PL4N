@@ -928,5 +928,12 @@ class Pat_model extends CI_Model {
         $sentencia="DELETE FROM pat_item_seccion WHERE id_item=$id_item";
         $this->db->query($sentencia);
 	}
+ //Obtener la duración de un periodo
+    function mostrar_periodo($anio)
+    {
+        $sentencia = "SELECT inicio_periodo, fin_periodo from pat_documento where inicio_periodo <= $anio and fin_periodo >= $anio";
+        $query=$this->db->query($sentencia);
+        return (array)$query->result_array();
+    }
 }
 ?>

@@ -1,7 +1,6 @@
 <?php 
 
-# define("SERVER_MTPS","192.168.1.200");
-define("SERVER_MTPS","127.0.0.1");
+define("SERVER_MTPS","192.168.1.200");
 class Sessiones extends CI_Controller {
 		
 	function Sessiones()

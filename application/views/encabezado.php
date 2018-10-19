@@ -8,6 +8,9 @@
         
         <link rel="stylesheet" type="text/css" href="<?=base_url()?>css/bootstrap/bootstrap.min.css"/>
         <script src="<?=base_url()?>js/demo-rtl.js"></script>
+
+        <script src="<?=base_url()?>js/prueba.js"></script>
+
         <link rel="stylesheet" type="text/css" href="<?=base_url()?>css/libs/font-awesome.css"/>
         <link rel="stylesheet" type="text/css" href="<?=base_url()?>css/libs/nanoscroller.css"/>
          

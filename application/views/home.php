@@ -96,6 +96,18 @@ blockquote.pull-right:before {
                             </ul>
                         </div>
                     </div>
+
+     <!--Código para poner un selector que muestre dashboard por año seleccionado-->
+            <form action="index.php" method="post" name="fmanio">
+                <label for="anio" class="form-control control-label"><b>Año a consultar</b></label>
+                <select  class="form-control select" data-placeholder="[Seleccione..]" name="anio">
+                <?php 
+                $anio = ((isset($_REQUEST["anio"])) ? $_REQUEST["anio"] : date("Y"));
+                for($i=$periodo["inicio_periodo"][0];$i<=$periodo["fin_periodo"][0];$i++)
+                    echo '<option value="'.$i.'" '.(($i==$anio) ? 'selected' : '').' >'.$i.'</option>';
+                ?>
+                </select>
+            </form>
                	</div>
                 </div>
 
@@ -181,6 +193,14 @@ blockquote.pull-right:before {
 }
 </style>
 <script>
+window.onload = function()
+{
+    document.forms["fmanio"].anio.onchange = function()
+    {
+        document.forms["fmanio"].submit();
+    }
+}
+
 	$(function() {
 		$('.chart').easyPieChart({
 			easing: 'easeOutBounce',
