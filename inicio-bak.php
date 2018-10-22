@@ -11,7 +11,7 @@ class Inicio extends CI_Controller
         parent::__construct();
         date_default_timezone_set('America/El_Salvador');
         error_reporting(0);
-        $this->load->helper('url'); 
+        $this->load->helper('url');
         $this->load->helper('form');
         $this->load->library("mpdf");
         $this->load->library("PHPExcel");
@@ -31,13 +31,13 @@ class Inicio extends CI_Controller
     *   Última Modificación: 23/07/2014
     *   Observaciones: Ninguna.
     */
-    function index($anio_evaluar=NULL)
+    function index()
     {   
         $data=$this->seguridad_model->consultar_permiso($this->session->userdata('id_usuario'),Dinicio); 
         if($data['id_permiso']!=NULL) {
-        	$anio = (($anio_evaluar != NULL) ? $anio_evaluar : date('Y'));
-			$data['periodo_pat'] = $this->pat_model->pat_periodo($anio);
-            $data['periodo_pat']["anio_evaluado"] = $anio;
+        	$anio= date('Y');
+        	if(isset($_REQUEST["anio"])) $anio = $_REQUEST["anio"];
+			$data['periodo_pat'] = $this->pat_model->mostrar_periodo($anio);
 			$data['objetivos']=$this->reportes_model->objetivos($anio);
 			for($i=0; $i < count($data['objetivos']); $i++) {
 				$r=$this->reportes_model->logros($anio, $data['objetivos'][$i]["id_item"]);

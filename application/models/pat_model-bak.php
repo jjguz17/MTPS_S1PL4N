@@ -651,15 +651,6 @@ class Pat_model extends CI_Model {
         $query=$this->db->query($sentencia);
         return (array)$query->result_array();
     }
-
-    //Regresar solo el inicio-fin de un periodo PAT
-    function pat_periodo($anio=NULL)
-    {
-        $sentencia = "SELECT inicio_periodo, fin_periodo FROM pat_documento WHERE inicio_periodo <= $anio AND fin_periodo >= $anio";
-        $query = $this->db->query($sentencia);
-        if($query->num_rows > 0)
-            return (array)$query->row();
-    }
     
     function actualizar_documento($formuInfo)
     {

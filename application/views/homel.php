@@ -98,19 +98,16 @@ blockquote.pull-right:before {
                     </div>
 
      <!--Código para poner un selector que muestre dashboard por año seleccionado-->
-        <div class="form-group">
-        <label for="anio" class="col-sm-3 control-label">Año a evaluar</label>
-        <div class="col-sm-8">
-        <select  class="form-control select"  name="anio" id="anio">
-        <?php
-        for($p=$periodo_pat["inicio_periodo"];$p<=$periodo_pat["fin_periodo"];$p++)
-        {
-            echo "<option value=\"$p\"".(($p==$periodo_pat["anio_evaluado"]) ? " selected" : "")." >$p</option>"; 
-        }
+            <form action="index.php" method="post" name="fmanio">
+                <label for="anio" class="form-control control-label"><b>Año a consultar</b></label>
+                <select  class="form-control select" data-placeholder="[Seleccione..]" name="anio">
+                <?php 
+                $anio = ((isset($_REQUEST["anio"])) ? $_REQUEST["anio"] : date("Y"));
+                for($i=$periodo["inicio_periodo"][0];$i<=$periodo["fin_periodo"][0];$i++)
+                    echo '<option value="'.$i.'" '.(($i==$anio) ? 'selected' : '').' >'.$i.'</option>';
                 ?>
-        </select>
-        </div>
-        </div>
+                </select>
+            </form>
                	</div>
                 </div>
 
@@ -155,7 +152,7 @@ blockquote.pull-right:before {
                             <div class="col-md-4">
                                 <span class="chart" data-percent="<?=$val['A']?>" data-bar-color="<?php if($val['A']>=70) { if($val['A']>=95) { echo $e; } else { echo $b;  } } else { echo $m; } ?>">
                                     <span class="percent"></span>%<br/>
-                                    <span class="lbl"><?=$periodo_pat["anio_evaluado"]?></span>
+                                    <span class="lbl"><?=date('Y')?></span>
                                 </span>
                             </div>
                         </div>
@@ -198,9 +195,9 @@ blockquote.pull-right:before {
 <script>
 window.onload = function()
 {
-    document.getElementById("anio").onchange = function()
+    document.forms["fmanio"].anio.onchange = function()
     {
-        location.href='<?php echo base_url();?>index.php/inicio/index/' + document.getElementById("anio").value;
+        document.forms["fmanio"].submit();
     }
 }
 
