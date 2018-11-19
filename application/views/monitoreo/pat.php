@@ -80,6 +80,20 @@
                                 <?php
                                     if($id_permiso==3) {
                                 ?>
+                                <!--Año-->        
+                                <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="anio_evaluar" class="col-sm-3 control-label">Año<span class="asterisk">*</span></label>
+                                                    <div class="col-sm-3">
+                                                        <select class="form-control select" name="anio_evaluar" id="anio_evaluar" data-placeholder="[Seleccione..]" disabled="disabled" >
+                                                       <option></option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
                                         <div class="row">
                                             <div class="col-sm-6">
                                                 <div class="form-group">
@@ -99,9 +113,12 @@
                                                                 $me[]='Octubre';
                                                                 $me[]='Noviembre';
                                                                 $me[]='Diciembre';
+                                                                if($id_permiso == 3){for($iadmin=0;$iadmin<count($me);$iadmin++)echo '<option value="'.($iadmin+1).'">'.$me[$iadmin].'</option>';}
+                                                                else{
                                                                 for ($im=0; $im < date('m', (strtotime ("-15 day"))); $im++) { 
                                                                     echo '<option value="'.($im+1).'" selected>'.$me[$im].'</option>';
                                                                 }
+                                                            }
                                                             ?>
                                                         </select>
                                                     </div>
@@ -179,6 +196,15 @@
                         }
                     }
                 },
+                //Año a evaluar
+                anio_evaluar: {
+                    icon: 'false',
+                    validators: {
+                        notEmpty: {
+                            message: 'No debe quedar vacío'
+                        }
+                    }
+                },
                 unidad_lider: {
                     icon: 'false',
                     validators: {
@@ -198,7 +224,7 @@
             }
         })
         .on('success.form.fv', function(e) {
-            event.preventDefault();
+            e.preventDefault();
             var url='<?=base_url()?>index.php/monitoreo/actualizar_pat';
             var mensaje_correcto="loadingcircle***Los regristos del PAT se han actualizado éxitosamente!";
             var mensaje_incorrecto="loadingcircle***Error actualizando los registros del PAT! Se perdió la conexión a la red";
@@ -232,6 +258,12 @@
         $('#mes').select2({
             placeholder: "[Seleccione...]"
         });
+
+        //Año
+        $('#anio_evaluar').select2({
+            placeholder: "[Seleccione...]",
+            allowClear: true
+        });
         tabla=$('.footable').DataTable({
 			'info': false
 		});
@@ -248,34 +280,74 @@
                         ajax_json(url, mensaje_correcto, mensaje_incorrecto, data);             
         				$("#unidad_lider").select2("destroy");
         				$("#unidad_lider").html(val['unidad_lider']);
+
+                        //Año
+                        $("#anio_evaluar").select2("destroy");
+                        $("#anio_evaluar").html(val['periodo']);
+
         				setTimeout(function(){                
         					$("#unidad_lider").select2({
         						placeholder: "[Seleccione...]",
         						allowClear: true
         					});
+                            //Año
+                            $("#anio_evaluar").select2({
+                                placeholder: "[Seleccioe...]",
+                                allowClear: true
+                            });
         				}, 250);
         				$("#unidad_lider").removeAttr("disabled");
+                        //Año
+                        $("#anio_evaluar").removeAttr("disabled");
+    
                         $("#mes").removeAttr("disabled");
         			}
         			else {
         				$("#unidad_lider").select2("destroy");
         				$("#unidad_lider").html('<option value=""></option>');
                         $("#unidad_lider").val('').trigger("change");
+
+                        //Año
+                        $("#anio_evaluar").select2("destroy");
+        				$("#anio_evaluar").html('<option value=""></option>');
+                        $("#anio_evaluar").val('').trigger("change");
         				setTimeout(function(){                
         					$("#unidad_lider").select2({
         						placeholder: "[Seleccione...]",
         						allowClear: true
         					});
+                            //Año
+                            $("#anio_evaluar").select2({
+                                placeholder: "[Seleccioe...]",
+                                allowClear: true
+                            });
         				}, 250);
                         $("#formu").data('formValidation').resetForm();
                         $("#unidad_lider").attr("disabled","disabled");
+                        //Año
+                        $("#anio_evaluar").attr("disabled","disabled");
+                        
                         $("#mes").attr("disabled","disabled");
         			}
         		});   
                 
+
+                $("#anio_evaluar").change(function(){
+                    if($("#unidad_lider").val()!="" && $("#anio_evaluar").val() != "") {
+                        var url='<?=base_url()?>index.php/monitoreo/buscar_nivel_item_actividad/'+$("#id_documento").val()+'/'+$("#unidad_lider").val()+'/'+$("#mes").val() +'/'+$("#anio_evaluar").val();
+                        var mensaje_correcto="boxspinner***Los datos se han cargado con éxito!";
+                        var mensaje_incorrecto="boxspinner***Error en la peticitión! Se perdió la conexión a la red";
+                        var data = {id_documento:$("#id_documento").val(),id_seccion:$(this).val()};
+                        ajax_json(url, mensaje_correcto, mensaje_incorrecto, data);             
+                        $("#matriz").html(val['tabla']);
+                    }
+                    else {
+                        $("#matriz").html('');
+                    }
+                });
                 $("#mes").change(function(){ 
                     if($("#unidad_lider").val()!="") {
-                        var url='<?=base_url()?>index.php/monitoreo/buscar_nivel_item_actividad/'+$("#id_documento").val()+'/'+$("#unidad_lider").val()+'/'+$(this).val();
+                        var url='<?=base_url()?>index.php/monitoreo/buscar_nivel_item_actividad/'+$("#id_documento").val()+'/'+$("#unidad_lider").val()+'/'+$(this).val() +'/'+$("#anio_evaluar").val();
                         var mensaje_correcto="boxspinner***Los datos se han cargado con éxito!";
                         var mensaje_incorrecto="boxspinner***Error en la peticitión! Se perdió la conexión a la red";
                         var data = {id_documento:$("#id_documento").val(),id_seccion:$(this).val()};
@@ -288,7 +360,9 @@
                 });
 
                 $("#unidad_lider").change(function(){ 
-                    var url='<?=base_url()?>index.php/monitoreo/buscar_nivel_item_actividad/'+$("#id_documento").val()+'/'+$(this).val()+'/'+$("#mes").val();
+                    var url='<?=base_url()?>index.php/monitoreo/buscar_nivel_item_actividad/'+$("#id_documento").val()+'/'+$(this).val()+'/'+$("#mes").val()+'/'+$("#anio_evaluar").val();
+       
+       
         <?php
             }
             else {

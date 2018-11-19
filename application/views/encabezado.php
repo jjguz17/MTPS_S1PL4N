@@ -8,9 +8,6 @@
         
         <link rel="stylesheet" type="text/css" href="<?=base_url()?>css/bootstrap/bootstrap.min.css"/>
         <script src="<?=base_url()?>js/demo-rtl.js"></script>
-
-        <script src="<?=base_url()?>js/prueba.js"></script>
-
         <link rel="stylesheet" type="text/css" href="<?=base_url()?>css/libs/font-awesome.css"/>
         <link rel="stylesheet" type="text/css" href="<?=base_url()?>css/libs/nanoscroller.css"/>
          
@@ -119,6 +116,8 @@
                 return "<?php echo base_url()?>";
             }
         </script>
+        <script src= "https://cdn.zingchart.com/zingchart.min.js"></script>
+
 		<link rel="stylesheet" type="text/css" href="<?=base_url()?>css/libs/nestable.css">
 	</head>
 	<body class="theme-red fixed-header fixed-leftmenu pace-done">

@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 class Pat_model extends CI_Model {
     
@@ -70,10 +70,10 @@ class Pat_model extends CI_Model {
         extract($formuInfo); //Se extrae el array con la data que se va a guardar
         $sentencia="INSERT INTO pat_actividad
         (id_item, meta_actividad, unidad_medida, anio_meta, meta_enero, meta_febrero, meta_marzo, meta_abril, meta_mayo, meta_junio, meta_julio, meta_agosto, 
-        meta_septiembre, meta_octubre, meta_noviembre, meta_diciembre, recursos_actividad, observaciones_actividad, id_seccion, fecha_creacion, id_usuario_crea) 
+        meta_septiembre, meta_octubre, meta_noviembre, meta_diciembre, recursos_actividad, observaciones_actividad, id_seccion, fecha_creacion, id_usuario_crea, peso_actividad) 
         VALUES 
         ($id_item, $meta_actividad, '$unidad_medida', $anio_meta, $meta_enero, $meta_febrero, $meta_marzo, $meta_abril, $meta_mayo, $meta_junio, $meta_julio, $meta_agosto, 
-        $meta_septiembre, $meta_octubre, $meta_noviembre, $meta_diciembre, '$recursos_actividad', '$observaciones_actividad', $id_seccion, '$fecha_creacion', $id_usuario_crea)";
+        $meta_septiembre, $meta_octubre, $meta_noviembre, $meta_diciembre, '$recursos_actividad', '$observaciones_actividad', $id_seccion, '$fecha_creacion', $id_usuario_crea, $peso_actividad)";
         $this->db->query($sentencia);
         return $this->db->insert_id(); //Se retorna el id del registro que se acaba de almacenar
     }
@@ -653,12 +653,24 @@ class Pat_model extends CI_Model {
     }
 
     //Regresar solo el inicio-fin de un periodo PAT
-    function pat_periodo($anio=NULL)
+    function pat_periodo($anio=NULL,$id_documento=NULL)
     {
-        $sentencia = "SELECT inicio_periodo, fin_periodo FROM pat_documento WHERE inicio_periodo <= $anio AND fin_periodo >= $anio";
+        $sentecia='';
+        
+        if(!is_null($anio))
+        {
+            $sentencia = "SELECT inicio_periodo, fin_periodo FROM pat_documento WHERE inicio_periodo <= $anio AND fin_periodo >= $anio";
+        }
+        else
+        {
+            if(!is_null($id_documento))
+            {
+                $sentencia = "SELECT inicio_periodo, fin_periodo FROM pat_documento WHERE id_documento=$id_documento";
+            }
+        }
         $query = $this->db->query($sentencia);
         if($query->num_rows > 0)
-            return (array)$query->row();
+        return (array)$query->row();
     }
     
     function actualizar_documento($formuInfo)
@@ -789,7 +801,7 @@ class Pat_model extends CI_Model {
 					AND IFNULL(I.id_padre,0)=IFNULL(".$id_padre.",IFNULL(I.id_padre,0))
                     AND IFNULL(A.id_seccion,0)=IFNULL(".$id_seccion.",IFNULL(A.id_seccion,0))
                     AND (IFNULL(A.anio_meta,0) = IFNULL(".$anio_meta.",IFNULL(A.anio_meta,0)))
-					ORDER BY I.id_nivel, I.id_padre";
+					ORDER BY I.id_nivel, I.id_padre LIMIT 460";
 		//echo $sentencia;
         $query=$this->db->query($sentencia);
         return $query->result_array();

@@ -38,6 +38,7 @@ class Inicio extends CI_Controller
         	$anio = (($anio_evaluar != NULL) ? $anio_evaluar : date('Y'));
 			$data['periodo_pat'] = $this->pat_model->pat_periodo($anio);
             $data['periodo_pat']["anio_evaluado"] = $anio;
+            $data["periodo_pat"]["inicio_periodo"]++;
 			$data['objetivos']=$this->reportes_model->objetivos($anio);
 			for($i=0; $i < count($data['objetivos']); $i++) {
 				$r=$this->reportes_model->logros($anio, $data['objetivos'][$i]["id_item"]);

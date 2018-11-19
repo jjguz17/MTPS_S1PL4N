@@ -1,4 +1,4 @@
-<?php
+<?php 
 class Pat extends CI_Controller
 {
     /* Incluir(TRUE)/No incluir(FALSE) los lugares de trabajo que ya tienen una visita programada en la lista de lugares de trabajo que se pueden asignar*/
@@ -54,7 +54,7 @@ class Pat extends CI_Controller
     *   Modificada por: Leonel
     *   Última Modificación: 14/06/2015
     *   Observaciones: Ninguna.
-    */
+    */ 
     function mostrar_niveles_recargado($id_documento=0)
     {
 		$data=$this->seguridad_model->consultar_permiso($this->session->userdata('id_usuario'),Dconfiguracion); 
@@ -160,6 +160,8 @@ class Pat extends CI_Controller
         $data=$this->seguridad_model->consultar_permiso($this->session->userdata('id_usuario'), Dcontrol_pat); //Se verifica el permiso del usuario logueado
         if($data['id_permiso']!="") { //Si el valor es vacío no tiene ningún tipo de permiso
             $data['documentos']=$this->pei_model->buscar_documentos(); //Se obtienen todos los registros de PEI guardados previamente
+            $data['periodo']=$this->pat_model->pat_periodo(date('Y'));
+
             pantalla('pat/cpat',$data,Dcontrol_pat); //Se muestra la vista
         }
         else {
@@ -176,7 +178,7 @@ class Pat extends CI_Controller
 
             if($anio=='NULL') {
                 //$anio="DATE_FORMAT(CURDATE(),'%Y')";
-                $anio=2017;
+                $anio=date('Y');
                 // agregue $anio++; Robertohqz 0112116 1057
             }
 			
@@ -189,6 +191,18 @@ class Pat extends CI_Controller
 			}
             
             $items='<option value=""></option>';
+
+
+
+            //Datos del año segun el pat seleccionado
+            $data["pat_periodo"] = $this->pat_model->pat_periodo(NULL, $id_documento);
+            $pat_periodo = '<option></option>';
+
+            for($a=(int)$data["pat_periodo"]["inicio_periodo"] + 1;$a<=$data["pat_periodo"]["fin_periodo"];$a++)
+            {
+                $pat_periodo.='<option value="'.$a.'">'.$a.'</option>';
+            }
+            //
             foreach ($data['items'] as $val) {
                 $items.='<option value="'.$val['id_item'].'" data-v="'.trim($val['descripcion_item']).'">'.trim($val['correlativo_item']).'</option>';
             }
@@ -200,7 +214,8 @@ class Pat extends CI_Controller
                 'id_padre'=>$items,
                 'nombre_nivel_p'=>$data['items'][0]['nombre_nivel_p'],
                 'nombre_nivel'=>$data['items'][0]['nombre_nivel'],
-                'id_nivel_a'=>$data['items'][0]['id_nivel_a']
+                'id_nivel_a'=>$data['items'][0]['id_nivel_a'],
+                'pat_periodo' => $pat_periodo
             );
             echo json_encode($json);
         }
@@ -228,9 +243,13 @@ class Pat extends CI_Controller
 			$id_actividad=$this->input->post('id_actividad');
 			$unidad_medida=$this->input->post('unidad_medida');
 			$recursos_actividad=$this->input->post('recursos_actividad');
-			$observaciones_actividad=$this->input->post('observaciones_actividad');
+            $observaciones_actividad=$this->input->post('observaciones_actividad');
+            
+            //Modificando el año
+            $anio_meta=($this->input->post('anio_evaluar')=="")?date('Y'):$this->input->post('anio_evaluar');
+
             #$anio_meta=($this->input->post('anio_meta')=="")?"DATE_FORMAT(CURDATE(),'%Y')":$this->input->post('anio_meta');
-			$anio_meta=($this->input->post('anio_meta')=="")?"DATE_FORMAT(CURDATE(),'2017')":$this->input->post('anio_meta');
+			#$anio_meta=($this->input->post('anio_meta')=="")?"DATE_FORMAT(CURDATE(),'2017')":$this->input->post('anio_meta');
             $meta_enero=($this->input->post('meta_enero')=="")?0:$this->input->post('meta_enero');
 			$meta_febrero=($this->input->post('meta_febrero')=="")?0:$this->input->post('meta_febrero');
 			$meta_marzo=($this->input->post('meta_marzo')=="")?0:$this->input->post('meta_marzo');
@@ -244,7 +263,10 @@ class Pat extends CI_Controller
 			$meta_noviembre=($this->input->post('meta_noviembre')=="")?0:$this->input->post('meta_noviembre');
 			$meta_diciembre=($this->input->post('meta_diciembre')=="")?0:$this->input->post('meta_diciembre');
 			$meta_actividad=$meta_enero+$meta_febrero+$meta_marzo+$meta_abril+$meta_mayo+$meta_junio+$meta_julio+$meta_agosto+$meta_septiembre+$meta_octubre+$meta_noviembre+$meta_diciembre;
-			if($data['id_permiso']==3) {
+			//Añadido campo de peso(UFG)
+            $peso_actividad=$this->input->post('peso_actividad');
+
+            if($data['id_permiso']==3) {
                 $id_seccion_crea=$this->input->post('unidad_lider');
                 $ids=$id_seccion_crea;
             }
@@ -268,7 +290,7 @@ class Pat extends CI_Controller
 				'fecha_modificacion'=>$fecha,
 				'id_usuario_modifica'=>$id_usuario
 			);
-			if($id_item=="") {
+			if($id_item=="") { 
 				$id_itemNew=$this->pei_model->guardar_wizard($formuInfo);
 				$id_estado=1;
 				$observacion_estado_actividad="";
@@ -288,7 +310,7 @@ class Pat extends CI_Controller
             $this->seguridad_model->bitacora(10,$this->session->userdata('id_usuario'),$descripcion_bitacora,$id_accion); 
 			
 			$formuInfo = array(
-				'id_actividad'=>$id_actividad,
+				'id_actividad'=>"NULL",
 				'id_item'=>$id_itemNew,
 				'meta_actividad'=>$meta_actividad,
 				'unidad_medida'=>$unidad_medida,
@@ -311,9 +333,10 @@ class Pat extends CI_Controller
 				'fecha_creacion'=>$fecha,
 				'id_usuario_crea'=>$id_usuario,
 				'fecha_modificacion'=>$fecha,
-				'id_usuario_modifica'=>$id_usuario
+				'id_usuario_modifica'=>$id_usuario,
+                'peso_actividad'=>$peso_actividad
 			);
-			if($id_actividad=="") {
+			if($formuInfo['id_actividad']=="NULL") {
 				$id_actividad=$this->pat_model->guardar_actividad($formuInfo);
                 $aa=" creó actividad con el id ".$id_actividad;
                 $id_accion=3;
@@ -362,21 +385,16 @@ class Pat extends CI_Controller
         } 
 	}
 	
-	function buscar_actividades($id_padre, $anio='NULL')
+	function buscar_actividades($id_padre=NULL, $anio=NULL, $unidad_organizativa=NULL)
 	{
-		
 		$data=$this->seguridad_model->consultar_permiso($this->session->userdata('id_usuario'),Dcontrol_pat); 
         if($data['id_permiso']!="") {
 			$this->db->trans_start();
+            if($anio== NULL) $anio=date('Y');
 
-            if($anio=='NULL') {
-                //$anio="DATE_FORMAT(CURDATE(),'%Y')";
-                $anio=2017;
-                #Robertohqz 011216 1109
-            }
 			
 			if($data['id_permiso']==3) {
-				$data['items']=$this->pat_model->buscar_items('NULL','NULL','NULL',$id_padre,'NULL',$anio);
+				$data['items']=$this->pat_model->buscar_items('NULL','NULL','NULL',((is_null($id_padre)) ? 'NULL' : $id_padre),((is_null($unidad_organizativa))?'NULL':$unidad_organizativa),((is_null($anio) ? 'NULL' : $anio)));
 			}
 			else {
 				$id_seccion=$this->seguridad_model->consultar_seccion_usuario($this->session->userdata('nr')); 
@@ -386,8 +404,9 @@ class Pat extends CI_Controller
             $this->db->trans_complete();
             $tr=($this->db->trans_status()===FALSE)?0:1;
 			
-			$json=' ';
+            $json=' ';
 			foreach ($data['items'] as $val) {
+               
 				$a='';
                 if($data['id_permiso']==3) {
 					$a.='<a title=\'Ver\' data-toggle=\'modal\' href=\'#modal\' onClick=\'ver('.$val['id_item'].');return false;\'  class=\'table-link view-row\' data-id=\''.$val['id_item'].'\'><span class=\'fa-stack\'><i class=\'fa fa-square fa-stack-2x\'></i><i class=\'fa fa-search fa-stack-1x fa-inverse\'></i></span></a>';
@@ -448,11 +467,12 @@ class Pat extends CI_Controller
                 $json.='["'.$val['descripcion_item'].'","'.$val['meta'].'","'.$est.'","'.$a.'"],';
 			}
 			$json='{ "data": ['.substr($json,0,-1).'] }';
-			echo $json;
+            echo $json;
         }
         else {
             $json =array(
-                'resultado'=>0
+                'resultado'=>0,
+                'error' => $tr
             );
             echo json_encode($json);
         }
@@ -519,7 +539,7 @@ class Pat extends CI_Controller
 	}
 	
 	function eliminar_actividad($id_item)
-	{
+	{ 
 		$data=$this->seguridad_model->consultar_permiso($this->session->userdata('id_usuario'),Dcontrol_pat);
         if($data['id_permiso']!=""){
             $this->db->trans_start();
@@ -628,11 +648,20 @@ class Pat extends CI_Controller
                 $items.='<option value="'.$val['id_seccion'].'">'.$val['nombre_seccion'].'</option>';
             }
 
+            //Año
+            $data["periodo"] = $this->pat_model->pat_periodo(NULL, $id_documento);
+            $periodo = '<option></option>';
+            for($i=$data["periodo"]["inicio_periodo"]+1;$i<=$data["periodo"]["fin_periodo"];$i++)
+            {
+                $periodo .= '<option value="'.$i.'">'.$i.'</option>'; 
+            }
+
             $this->db->trans_complete();
             $tr=($this->db->trans_status()===FALSE)?0:1;
             $json =array(
                 'resultado'=>$tr,
-                'unidad_lider'=>$items
+                'unidad_lider'=>$items,
+                'periodo' => $periodo
             );
             echo json_encode($json);
         }
@@ -652,7 +681,7 @@ class Pat extends CI_Controller
 
             if($anio=='NULL') {
                 #$anio="DATE_FORMAT(CURDATE(),'%Y')";
-                $anio=2017;
+                $anio=date('Y');
                 #Robertohqz 011216 1110
             }
             
@@ -682,7 +711,7 @@ class Pat extends CI_Controller
 
             if($anio=='NULL') {
                 #$anio="DATE_FORMAT(CURDATE(),'%Y')";
-                $anio=2017;
+                $anio=date('Y');
                 #Robertohqz 011216 1110
             }
             

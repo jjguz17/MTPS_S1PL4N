@@ -1,0 +1,23 @@
+Formulario  
+Nombre: #formu
+
+Campos
+PEI: #id_documento
+Año: #anio_evaluar
+Proceso padre: #id_padre
+Unidad organizativa: #unidad_lider
+Proceso: Proceso: #descripcion_item
+Meta anual: #meta_actividad
+Unidad de medida: #unidad_medida
+Recursos: #recursos_actividad
+Observaciones: #observaciones_actividad
+
+Botón guardar: #guardar
+Botón actualizar: #actualizar
+Botón PAT: #pat
+Botón limpiar: #limpiar
+
+
+
+
+GUARDAR_ACTIVIDAD

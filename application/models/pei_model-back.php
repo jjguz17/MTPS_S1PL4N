@@ -166,7 +166,7 @@ class Pei_model extends CI_Model {
     function guardar_wizard($formuInfo)
     {
         extract($formuInfo);
-		if($id_seccion=="") 
+		if($id_seccion=="")
 			$id_seccion="NULL";
         $sentencia="INSERT INTO pat_item
                     (id_nivel, id_seccion, correlativo_item, descripcion_item, id_padre, fecha_creacion, id_usuario_crea) 

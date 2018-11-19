@@ -542,6 +542,78 @@ class Reportes_model extends CI_Model {
 		//echo "<pre>".$actividades."</pre>";
         return (array)$query->result_array();
 	}
+
+
+
+	//UFG 2018, Creando funciones para avance de logros
+
+	function avance_pei_logros($anio, $mes='NULL', $id_seccion)
+	{
+		$sentencia = "select ifnull(actividad.id_seccion,0) as 'seccion', ifnull(actividad.meta,0) as 'meta', ifnull(logro.total,0) as 'realizado' from (select pat_actividad.id_seccion as id_seccion, pat_actividad.id_actividad";
+		$logro_mes_evaluar = '';	
+		if($mes == 'NULL')
+		{
+			$sentencia .= ",sum(ifnull(pat_actividad.meta_actividad),0) as 'meta' ";
+			$logro_mes_evaluar .= " where ";
+		}
+		else if((int)$mes <=12)
+		{
+			$sentencia.=",sum(ifnull((
+				case 
+				when ". $mes."=1 then ifnull(pat_actividad.meta_enero,0)
+				when ". $mes."=2 then ifnull(pat_actividad.meta_febrero,0)
+				when ". $mes."=3 then ifnull(pat_actividad.meta_marzo,0)
+				when ". $mes."=4 then ifnull(pat_actividad.meta_abril,0)
+				when ". $mes."=5 then ifnull(pat_actividad.meta_mayo,0)
+				when ". $mes."=6 then ifnull(pat_actividad.meta_junio,0)
+				when ". $mes."=7 then ifnull(pat_actividad.meta_julio,0)
+				when ". $mes."=8 then ifnull(pat_actividad.meta_agosto,0)
+				when ". $mes."=9 then ifnull(pat_actividad.meta_septiembre,0)
+				when ". $mes."=10 then ifnull(pat_actividad.meta_octubre,0)
+				when ". $mes."=11 then ifnull(pat_actividad.meta_noviembre,0)
+				when ". $mes."=12 then ifnull(pat_actividad.meta_diciembre,0)
+				end 
+			),0))as 'meta'";
+			$logro_mes_evaluar .= " where pat_logro.mes_logro=".$mes." and ";
+		}
+		else if((int)$mes > 12)
+		{
+			$sentencia.=",sum(ifnull((
+				case 
+				when ". $mes."=13 then ifnull(pat_actividad.meta_enero,0) + ifnull(pat_actividad.meta_febrero,0) + ifnull(pat_actividad.meta_marzo,0)
+				when ". $mes."=14 then ifnull(pat_actividad.meta_abril,0) + ifnull(pat_actividad.meta_mayo,0) + ifnull(pat_actividad.meta_junio,0)
+				when ". $mes."=15 then ifnull(pat_actividad.meta_julio,0) + ifnull(pat_actividad.meta_agosto,0) + ifnull(pat_actividad.meta_septiembre,0)
+				when ". $mes."=16 then ifnull(pat_actividad.meta_octubre,0) + ifnull(pat_actividad.meta_noviembre,0) + ifnull(pat_actividad.meta_diciembre,0)
+				end 
+			),0))as 'meta'";
+
+			switch($mes)
+			{
+				case 13:
+				$logro_mes_evaluar .= " where pat_logro.mes_logro >= 1 and pat_logro.mes_logro <= 3 and "; 
+				break;
+				case 14:
+				$logro_mes_evaluar .= " where pat_logro.mes_logro >= 4 and pat_logro.mes_logro <= 6 and "; 
+				break;
+				case 15:
+				$logro_mes_evaluar .= " where pat_logro.mes_logro >= 7 and pat_logro.mes_logro <= 9 and "; 
+				break;
+				case 16:
+				$logro_mes_evaluar .= " where pat_logro.mes_logro >= 10 and pat_logro.mes_logro <= 12  and "; 
+				break;
+			}
+		}
+		 
+
+		$sentencia.= " from pat_actividad where pat_actividad.id_seccion = ".$id_seccion." and pat_actividad.anio_meta=".$anio.") as actividad inner join (select pat_logro.id_actividad, sum(ifnull(pat_logro.cantidad_logro,0)) as 'total' from pat_logro ".$logro_mes_evaluar. " pat_logro.anio_logro= ".$anio." and pat_logro.id_actividad in(select pat_actividad.id_actividad as id_actividad from pat_actividad where pat_actividad.anio_meta=".$anio." and pat_actividad.id_seccion=".$id_seccion.")) as logro";
+
+		return array('realizado' => $sentencia);
+		$query = $this->db->query($sentencia);
+			if($query->num_rows > 0)
+			return array('realizado' => $sentencia);
+			#return (array)$query->row();
+			else return array(0,0);
+	}
 	
 	/*
 		$sentencia="SELECT

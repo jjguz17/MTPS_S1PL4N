@@ -195,14 +195,18 @@ blockquote.pull-right:before {
   font-size: 1.25em;
 }
 </style>
-<script>
-window.onload = function()
-{
-    document.getElementById("anio").onchange = function()
-    {
-        location.href='<?php echo base_url();?>index.php/inicio/index/' + document.getElementById("anio").value;
-    }
-}
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#anio').select2({
+            placeholder: "[Seleccione...]",
+            allowClear: true
+        });
+
+
+        $('#anio').change(function(){
+            window.location.href='<?= base_url()?>index.php/inicio/index/' + $('#anio').val();
+        });
+});
 
 	$(function() {
 		$('.chart').easyPieChart({

@@ -1,4 +1,4 @@
-<style>
+<style> 
 	.table tbody>tr>td {text-align: left;}
 	.table a.table-link {margin: 0;}
 </style>
@@ -39,6 +39,18 @@
                                         </select>
                                     </div>
                                 </div>
+                               <?php if($id_permiso == 3) {?>
+                                    <div class="form-group">
+                                        <label for="anio_evaluar" class="col-sm-3 control-label">Año<span class="asterisk">*</span></label>
+                                        <div class="col-sm-8">
+                                            <select class="form-control select" name="anio_evaluar" id="anio_evaluar" data-placeholder="[Seleccione..]" disabled="disabled">
+                                                <option value="">
+                                                </option>
+                                               
+                                            </select>
+                                        </div>
+                                </div>
+                               <?php }?>
                                 <div class="form-group">
                                     <label for="id_padre" id="l_id_padre" class="col-sm-3 control-label" style="text-transform: capitalize;">Proceso padre<span class="asterisk">*</span></label>
                                     <div class="col-sm-4">
@@ -56,6 +68,7 @@
                                     //El siguiente objeto HTML sólo se muestra si el usuario logueado tiene permisos de administrador en esta pantalla
                                     if($id_permiso==3) {
                                 ?>
+                               
                                     <div class="form-group">
                                         <label for="unidad_lider" class="col-sm-3 control-label">Unidad organizativa<span class="asterisk">*</span></label>
                                         <div class="col-sm-8">
@@ -101,6 +114,16 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
+                                    <label for="peso_actividad" class="col-sm-3 control-label">Peso <span class="asterisk">*</span></label>
+                                    <div class="col-sm-4">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">%</span>
+                                            <input type="text" class="form-control" id="peso_actividad" name="peso_actividad">
+                                            <!--<span class="input-group-addon">USD</span>-->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
                                     <label for="observaciones_actividad" id="l_descripcion_item" class="col-sm-3 control-label" style="text-transform: capitalize;">Observaciones </label>
                                     <div class="col-sm-8">
                                         <textarea class="form-control descripcion" id="observaciones_actividad" name="observaciones_actividad"></textarea>
@@ -114,7 +137,7 @@
                 <div class="project-box-footer clearfix">
                 </div>
                 <div class="project-box-ultrafooter clearfix">
-                    <ul class="pager wizard">
+                    <ul class="pager wizard">                      
                         <li><button class="btn btn-success" type="button" name="guardar" id="guardar"><span class="glyphicon glyphicon-floppy-save"></span> Guardar</button></li>
                         <li><button class="btn btn-info" type="button" name="actualizar" id="actualizar"><span class="glyphicon glyphicon-floppy-saved"></span> Actualizar</button></li>
                         <li><button class="btn btn-warning" type="button" name="pat" id="pat"><span class="fa fa-table"></span> PAT</button></li>
@@ -234,6 +257,14 @@
 	var act_plural="procesos";
 	var act_singular="proceso";
 	var tabla;
+
+
+
+     function actualizarTabla(idpadre,anio,unidad_lider=null)
+       {
+        $("#pop").html('<i tabindex="0" data-trigger="focus" data-container="body" class="fa fa-flag popover2" data-placement="bottom"></i> <script type="text/javascript"> /*setTimeout(function(){ $(".popover2").popover("destroy"); }, 250);*/ $(".popover2").popover({ content: "'+$("#id_padre option:selected").data("v")+'", title: "'+$("#id_padre option:selected").text()+'" }); <\/script>');
+        tabla.ajax.url( base_url()+'index.php/pat/buscar_actividades/'+((idpadre!=null)?idpadre:'NULL') +'/' + ((anio!=null)?anio:'NULL') + '/'+ ((unidad_lider!=null)?unidad_lider:'NULL')).load(); 
+       }
 	
 	$('#actualizar').removeClass('mostrar').addClass('ocultar');
 	$('#guardar').removeClass('ocultar').addClass('mostrar');
@@ -265,9 +296,18 @@
                         }
                     }
                 },
+                
                 <?php 
                     if($id_permiso==3) {
                 ?>
+                anio_evaluar: {
+                    icon: 'false',
+                    validators: {
+                        notEmpty: {
+                            message: 'No debe quedar vacío'
+                        }
+                    }
+                },
                         unidad_lider: {
                             icon: 'false',
                             validators: {
@@ -295,13 +335,13 @@
                     trigger: 'blur',
                     validators: {
                         greaterThan: {
-                            value: 1
+                            value: 0
                         },
                         notEmpty: {
                             message: 'No debe quedar vacío'
                         },
                         regexp: {
-                            regexp: /^[0-9]+$/i,
+                            regexp: /^\d+(.\d+)?$/,
                             message: 'Debe escribir sólo números'
                         }
                     }
@@ -326,32 +366,57 @@
                             message: 'No debe quedar vacío'
                         },
                         regexp: {
-                            regexp: /^[0-9]+(\.[0-9]{2})?$/,
+                            regexp:  /^[0-9]+((\.)+(([0-9]{2})|([0-9]{1})))?$/,
                             message: 'Debe contener formato de moneda'
+                        }
+                    }
+                },
+                //Validador para peso_actividad
+                peso_actividad: {
+                    validators: {
+                        greaterThan: {
+                            value: 0
+                        },lessThan:{
+                            value: 100
+                        },
+                        notEmpty: {
+                            message: 'No debe quedar vacío'
+                        },
+                        regexp: {
+                            regexp:  /^(100(\.00?)?|[1-9]?\d(\.\d\d?)?)$/ ,
+                            message: 'Debe contener formato de porcentaje'
                         }
                     }
                 }
             }
         })
         .on('success.form.fv', function(e) {
-            event.preventDefault();
+            e.preventDefault();
             var url='<?=base_url()?>index.php/pat/guardar_actividad';
+            var mensaje_correcto;
+            var mensaje_incorrecto;
             if($('#id_item').val()=="") {
-                var mensaje_correcto="loadingcircle***El regristo de "+act_singular+" se ha guardado éxitosamente!";
-                var mensaje_incorrecto="loadingcircle***Error guardando el registro de "+act_singular+"! Se perdió la conexión a la red";
+                mensaje_correcto="loadingcircle***El regristo de "+act_singular+" se ha guardado éxitosamente!";
+                mensaje_incorrecto="loadingcircle***Error guardando el registro de "+act_singular+"! Se perdió la conexión a la red";
             }
             else {
-                var mensaje_correcto="loadingcircle***El regristo de "+act_singular+" se ha actualizado éxitosamente!";
-                var mensaje_incorrecto="loadingcircle***Error en la actualización del registro de "+act_singular+"! Se perdió la conexión a la red";
+                mensaje_correcto="loadingcircle***El regristo de "+act_singular+" se ha actualizado éxitosamente!";
+                mensaje_incorrecto="loadingcircle***Error en la actualización del registro de "+act_singular+"! Se perdió la conexión a la red";
             }
             var data = new FormData($(this)[0]);
             ajax_json(url, mensaje_correcto, mensaje_incorrecto, data);
-            tabla.ajax.url( base_url()+'index.php/pat/buscar_actividades/'+$("#id_padre").val() ).load();
+
+            
+            //tabla.ajax.url(base_url()+'index.php/pat/buscar_actividades/'+$("#id_padre").val() ).load();
             $("#meta_abril,#meta_actividad,#meta_agosto,#meta_diciembre,#meta_enero,#meta_febrero,#meta_julio,#meta_junio,#meta_marzo,#meta_mayo,#meta_noviembre,#meta_octubre,#meta_septiembre,#unidad_medida,#descripcion_item,#id_actividad,#id_item,#recursos_actividad,#observaciones_actividad").val("");
             $("#formu").data('formValidation').resetForm();
+            $('#peso_actividad').prop("value","");
             $('#actualizar').removeClass('mostrar').addClass('ocultar');
             $('#guardar').removeClass('ocultar').addClass('mostrar');
-            return false;
+
+            //Actualizar la tabla
+        actualizarTabla($('#id_padre').val(), <?= (($id_permiso==3) ? '$("#anio_evaluar").val()': date('Y'))?>)
+            return true;
         });        
 		
         $('#myWizard').wizard();
@@ -363,6 +428,12 @@
             placeholder: "[Seleccione...]",
             allowClear: true
         });
+        <?php if($id_permiso == 3){?>
+        $('#anio_evaluar').select2({
+            placeholder: "[Seleccione...]",
+            allowClear: true
+        });
+    <?php }?>
         tabla=$('.footable').DataTable({
 			'info': false
 		});
@@ -376,6 +447,16 @@
                 var data = {id_documento:$(this).val()};
                 ajax_json(url, mensaje_correcto, mensaje_incorrecto, data);
                 
+                
+                //Modificaciones para el ingreso del año (UFG)
+                <?php if($id_permiso == 3){?>
+                    $('#anio_evaluar').select2({
+                        placeholder: "[Seleccione...]",
+                        allowClear: true
+                        });
+                $("#anio_evaluar").html(val['pat_periodo']);
+                $("#anio_evaluar").removeAttr("disabled");
+                <?php }?>
                 $("#id_padre").select2("destroy");
                 $("#l_id_padre").html(val['nombre_nivel_p']+' <span class="asterisk">*</span>');
                 $("#l_descripcion_item").html(val['nombre_nivel']+' <span class="asterisk">*</span>');
@@ -392,8 +473,18 @@
                     });
                 }, 250);
                 $("#id_padre").removeAttr("disabled");
+
+                //Año
+                
             }
             else {
+                //Año
+                <?php if($id_permiso == 3){?>
+                $("#anio_evaluar").select2("destroy");
+                $("#anio_evaluar").attr("disabled","disabled");
+                $("#anio_evaluar").html('<option value=""></option>');
+                <?php }?>
+
                 $("#id_padre").select2("destroy");
                 $("#l_id_padre").html('Proceso padre <span class="asterisk">*</span>');
                 $("#l_descripcion_item").html('Proceso <span class="asterisk">*</span>');
@@ -412,16 +503,50 @@
                 $("#id_padre").val("").trigger("change");
                 $("#formu").data('formValidation').resetForm();
                 $("#id_padre").attr("disabled","disabled");
+
+            
                 $("#pop").html('<i tabindex="0" data-trigger="focus" data-container="body" class="fa fa-flag popover2" data-placement="bottom"></i>');
             }
         });
 
-        $("#id_padre").change(function(){
-            if($(this).val()!="") {
-                $("#pop").html('<i tabindex="0" data-trigger="focus" data-container="body" class="fa fa-flag popover2" data-placement="bottom"></i> <script type="text/javascript"> /*setTimeout(function(){ $(".popover2").popover("destroy"); }, 250);*/ $(".popover2").popover({ content: "'+$("#id_padre option:selected").data("v")+'", title: "'+$("#id_padre option:selected").text()+'" }); <\/script>');
-				tabla.ajax.url( base_url()+'index.php/pat/buscar_actividades/'+$(this).val() ).load();
 
-                var url='<?=base_url()?>index.php/pat/buscar_actividades_unidad/'+$(this).val();
+       //Cuando al año cambie debe actualizarse la tabla(UFG)
+      <?php if($id_permiso == 3){?>
+       $('#anio_evaluar').change(function()
+       {
+        if(($(this).val() == '') && ($('#id_padre').val() != ''))
+        {
+            actualizarTabla($('#id_padre').val(),null);
+        }
+        else if(($(this).val() != '') && ($('#id_padre').val() == ''))
+        {
+            actualizarTabla(null,$('#anio_evaluar').val());
+        }
+        else if(($(this).val() != '') && ($('#id_padre').val() != ''))
+        {
+            actualizarTabla($('#id_padre').val(),$('#anio_evaluar').val());
+        }
+        else
+        {
+            actualizarTabla(null,null);
+        }
+        
+            //Fin de la modificación(UFG)
+       }); 
+       <?php }?>
+
+      
+
+        $("#id_padre").change(function(){
+
+            //Modificación
+            if(<?=(($id_permiso==3)?'$("#anio_evaluar").val() == "" && ' : '')?>  ($('#id_padre').val() != ''))
+        {
+           
+           actualizarTabla($('#id_padre').val(), <?=(($id_permiso==3)?'null' :date('Y'))?>);
+        
+            //Actualizar campos
+            var url='<?=base_url()?>index.php/pat/buscar_actividades_unidad/'+$(this).val();
                 var mensaje_correcto=" ***Los datos se han cargado con éxito!";
                 var mensaje_incorrecto=" ***Error en la peticitión! Se perdió la conexión a la red";
                 var data = {id_padre:$(this).val()};
@@ -442,11 +567,11 @@
                 <?php
                     }
                 ?>
-			}
-			else {
-                $("#pop").html('<i tabindex="0" data-trigger="focus" data-container="body" class="fa fa-flag popover2" data-placement="bottom"></i>');
-        		tabla.ajax.url( base_url()+'index.php/pat/buscar_actividades/0').load();
-
+        }
+        else if(<?=(($id_permiso==3)?'$("#anio_evaluar").val() !=""' : 'true')?> && ($('#id_padre').val() == ''))
+        {
+            actualizarTabla(null,<?=(($id_permiso==3)?'$("#anio_evaluar").val()' :date('Y')) ?>);
+                //Actualizar Campos
                 <?php 
                     if($id_permiso==3) {
                 ?>
@@ -462,8 +587,67 @@
                 <?php
                     }
                 ?>
-			}
+        }
+        else if(<?=(($id_permiso==3)?'$("#anio_evaluar").val() != ""' : 'true')?> && ($('#id_padre').val() != ''))
+        {
+            actualizarTabla($('#id_padre').val(),<?=(($id_permiso==3)?'$("#anio_evaluar").val()' :date('Y')) ?>);
+       //Actualizar campos
+       var url='<?=base_url()?>index.php/pat/buscar_actividades_unidad/'+$(this).val();
+                var mensaje_correcto=" ***Los datos se han cargado con éxito!";
+                var mensaje_incorrecto=" ***Error en la peticitión! Se perdió la conexión a la red";
+                var data = {id_padre:$(this).val()};
+                ajax_json(url, mensaje_correcto, mensaje_incorrecto, data);
+                
+                <?php 
+                    if($id_permiso==3) {
+                ?>                
+                        $("#unidad_lider").select2("destroy");
+                        $("#unidad_lider").html(val['unidad_lider']);
+                        setTimeout(function(){                
+                            $("#unidad_lider").select2({
+                                placeholder: "[Seleccione...]",
+                                allowClear: true
+                            });
+                        }, 250);
+                        $("#unidad_lider").removeAttr("disabled");
+                <?php
+                    }
+                ?>
+       
+        }
+        else
+        {
+            actualizarTabla(null, null);
+        //Actualizar Campos
+        <?php 
+                    if($id_permiso==3) {
+                ?>
+                        $("#unidad_lider").select2("destroy");
+                        $("#unidad_lider").html('<option value=""></option>');
+                        setTimeout(function(){                
+                            $("#unidad_lider").select2({
+                                placeholder: "[Seleccione...]",
+                                allowClear: true
+                            });
+                        }, 250);
+                        $("#unidad_lider").attr("disabled","disabled");
+                <?php
+                    }
+                ?>
+        
+        }
+
 		});
+
+       <?php
+        if($id_permiso == 3)
+        {?>
+         $("#unidad_lider").change(function(){
+            actualizarTabla($('#id_padre').val(),$('#anio_evaluar').val(),$('#unidad_lider').val());
+        });
+        <?php
+        }
+       ?>
 
         $(".meta_mensual").keyup(function(){
             var sum=0;
@@ -485,6 +669,11 @@
         $("#limpiar").click(function(e){
 			$("#formu").trigger("reset");
 			$("#id_documento").val("").trigger("change");
+
+            //Año añadido
+            <?php if($id_permiso == 3) {?>
+            $("#anio_evaluar").val("").trigger("change");           
+        <?php }?>
             $("#id_padre").val("").trigger("change");
             $("#formu").data('formValidation').resetForm();
 			$("#id_item").val("");
@@ -539,7 +728,7 @@
 		}
         return false;
     }
-	
+	 
 	function eliminar(id){
 		$("#formu").data('formValidation').resetForm();
         $('#actualizar').removeClass('mostrar').addClass('ocultar');
@@ -549,15 +738,17 @@
         var mensaje_incorrecto="loadingcircle***Error en la peticitión! Se perdió la conexión a la red";
         var data = {id_documento:id};
         ajax_json(url, mensaje_correcto, mensaje_incorrecto, data);
+        
 		if(id==$("#id_item").val())
-			$("#id_item,#id_actividad").val("");
-		tabla.ajax.url( base_url()+'index.php/pat/buscar_actividades/'+$("#id_padre").val() ).load();
+		$("#id_item,#id_actividad").val("");
+        actualizarTabla((($("#id_padre").val() != null) ? $('#id_padre').val() : null),<?=($id_permiso == 3 ? '$("#anio_evaluar").val()' : date('Y'))?>);
+        //tabla.ajax.url( base_url()+'index.php/pat/buscar_actividades/'+$("#id_padre").val() ).load();
         return false;
     }	
 	
 	function eliminar_(id) {		
 		$("#modal .modal-title").html("Eliminar registro");
-		$("#modal .modal-body").html("¿Realmente desea eliminar este registro? Tenga en cuenta que una vez borrado no lo podrá recuperar y todos los registros que dependan de él también se perderán.");
+		$("#modal .modal-body").html("¿Realmente desea eliminar este registro ("+id+")? Tenga en cuenta que una vez borrado no lo podrá recuperar y todos los registros que dependan de él también se perderán.");
 		$("#modal .btn-success").attr("onClick","eliminar("+id+")");
 	}
 	
